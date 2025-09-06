@@ -107,10 +107,12 @@ export default function CreateRFQ() {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" onClick={() => navigate('/dashboard/rfqs')}>
+        <button onClick={() => navigate('/dashboard/rfqs')} className='pl-2'>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        </button>
+        {/* <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/rfqs')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to RFQs
-        </Button>
+        </Button> */}
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Create New RFQ</h2>
           <p className="text-gray-600">Create a new Request for Quotation to invite bids</p>
@@ -127,43 +129,43 @@ export default function CreateRFQ() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title, Category, Budget */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label htmlFor="title">Project Title *</Label>
                 <Input id="title" name="title" value={formData.title} onChange={handleChange} required />
               </div>
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label htmlFor="category">Category</Label>
                 <Input id="category" name="category" value={formData.category} onChange={handleChange} />
               </div>
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label htmlFor="budget_min">Budget Min</Label>
                 <Input id="budget_min" name="budget_min" type="number" value={formData.budget_min} onChange={handleChange} />
               </div>
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label htmlFor="budget_max">Budget Max</Label>
                 <Input id="budget_max" name="budget_max" type="number" value={formData.budget_max} onChange={handleChange} />
               </div>
             </div>
 
             {/* Scope */}
-            <div>
+            <div className="space-y-2 space-x-2">
               <Label htmlFor="scope">Project Scope *</Label>
               <Textarea id="scope" name="scope" value={formData.scope} onChange={handleChange} rows={6} required />
             </div>
 
             {/* Evaluation criteria */}
-            <div>
+            <div className="space-y-2 space-x-2">
               <Label htmlFor="evaluation_criteria">Evaluation Criteria *</Label>
               <Textarea id="evaluation_criteria" name="evaluation_criteria" value={formData.evaluation_criteria} onChange={handleChange} rows={4} required />
             </div>
 
             {/* Deadlines */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label>Submission Deadline *</Label>
                 <Input name="deadline" type="datetime-local" value={formData.deadline} onChange={handleChange} required />
               </div>
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label>Clarification Deadline</Label>
                 <Input name="clarification_deadline" type="datetime-local" value={formData.clarification_deadline} onChange={handleChange} />
               </div>
@@ -171,35 +173,35 @@ export default function CreateRFQ() {
 
             {/* Project dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label>Project Start Date</Label>
                 <Input name="start_date" type="date" value={formData.start_date} onChange={handleChange} />
               </div>
-              <div>
+              <div className="space-y-2 space-x-2">
                 <Label>Project End Date</Label>
                 <Input name="end_date" type="date" value={formData.end_date} onChange={handleChange} />
               </div>
             </div>
 
             {/* Eligibility + weights */}
-            <div>
+            <div className="space-y-2 space-x-2">
               <Label>Eligibility Requirements</Label>
               <Textarea name="eligibility_requirements" value={formData.eligibility_requirements} onChange={handleChange} rows={3} />
             </div>
-            <div>
+            <div className="space-y-2 space-x-2">
               <Label>Evaluation Weights</Label>
               <Input name="evaluation_weights" value={formData.evaluation_weights} onChange={handleChange} placeholder="e.g. Price 40%, Technical 40%, Experience 20%" />
             </div>
 
             {/* Files */}
-            <div>
+            <div className="space-y-2 space-x-2">
               <Label>Attach Supporting Documents</Label>
               <Input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files))} className="cursor-pointer" />
             </div>
 
             {/* Error */}
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md w-full">
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
-import { Plus, FileText, Briefcase, Users, TrendingUp } from 'lucide-react'
+import { Plus, FileText, Briefcase, Users, TrendingUp, Calendar, Eye } from 'lucide-react'
 
 export default function OwnerDashboard() {
   const [stats, setStats] = useState({
@@ -12,6 +13,7 @@ export default function OwnerDashboard() {
     totalBids: 0
   })
   const [recentRFQs, setRecentRFQs] = useState([])
+  const [allRFQsLength, setRFQsLength] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -21,8 +23,8 @@ export default function OwnerDashboard() {
   const fetchDashboardData = async () => {
     try {
       const [rfqsResponse, projectsResponse] = await Promise.all([
-        fetch('/api/rfqs', { credentials: 'include' }),
-        fetch('/api/projects', { credentials: 'include' })
+        fetch('http://127.0.0.1:5000/api/rfqs', { credentials: 'include' }),
+        fetch('http://127.0.0.1:5000/api/projects', { credentials: 'include' })
       ])
 
       if (rfqsResponse.ok && projectsResponse.ok) {
@@ -36,12 +38,43 @@ export default function OwnerDashboard() {
           totalBids: rfqs.reduce((acc, rfq) => acc + (rfq.bids?.length || 0), 0)
         })
 
-        setRecentRFQs(rfqs.slice(0, 5))
+        setRFQsLength(rfqs.length)
+        setRecentRFQs(rfqs.slice(0, 2))
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'open':
+        return 'bg-green-100 text-green-800'
+      case 'closed':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-blue-100 text-blue-800'
+    }
+  }
+
+  const formatDeadline = (deadline) => {
+    if (!deadline) return 'No deadline set'
+    
+    try {
+      const date = new Date(deadline)
+      const day = date.getDate().toString().padStart(2, '0')
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = date.getFullYear()
+      const hours = date.getHours()
+      const minutes = date.getMinutes().toString().padStart(2, '0')
+      const ampm = hours >= 12 ? 'PM' : 'AM'
+      const displayHours = hours % 12 || 12
+      
+      return `${day}-${month}-${year} ${displayHours}:${minutes} ${ampm}`
+    } catch (error) {
+      return deadline
     }
   }
 
@@ -56,7 +89,8 @@ export default function OwnerDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-900">Owner Dashboard</h2>
+        {/* <h2 className="text-3xl font-bold text-gray-900">Owner Dashboard</h2> */}
+        <h2 className="text-3xl font-bold text-gray-900">Overview</h2>
         <Link to="/dashboard/rfqs/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
@@ -125,10 +159,19 @@ export default function OwnerDashboard() {
       {/* Recent RFQs */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent RFQs</CardTitle>
-          <CardDescription>
-            Your latest Request for Quotations
-          </CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Recent RFQs</CardTitle>
+              <CardDescription>
+                Your latest Request for Quotations
+              </CardDescription>
+            </div>
+            <Link to="/dashboard/rfqs">
+              <Button variant="outline" size="sm">
+                View All RFQs
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {recentRFQs.length === 0 ? (
@@ -145,24 +188,50 @@ export default function OwnerDashboard() {
           ) : (
             <div className="space-y-4">
               {recentRFQs.map((rfq) => (
-                <div key={rfq.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h4 className="font-medium">{rfq.title}</h4>
-                    <p className="text-sm text-gray-500">Deadline: {rfq.deadline}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      rfq.status === 'open' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {rfq.status}
-                    </span>
-                    <Link to={`/dashboard/rfqs/${rfq.id}`}>
-                      <Button variant="outline" size="sm">View</Button>
-                    </Link>
-                  </div>
-                </div>
+                <Card key={rfq.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{rfq.title}</CardTitle>
+                        <CardDescription className="mt-2">
+                          {rfq.scope && rfq.scope.length > 120 
+                            ? `${rfq.scope.substring(0, 120)}...` 
+                            : rfq.scope || 'No description available'
+                          }
+                        </CardDescription>
+                      </div>
+                      {/* <Badge className={getStatusColor(rfq.status)}>
+                        {rfq.status}
+                      </Badge> */}
+
+                  <Badge className={rfq.status == "open" ? "bg-green-200 text-green-800 p-4" : "bg-red-200 text-red-800 p-4"}>
+                    {rfq.status == "open" ? "Open" : "Closed"}
+                  </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-6 text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Deadline: {formatDeadline(rfq.deadline)}
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-1" />
+                          {rfq.bids?.length || 0} bids
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Link to={`/dashboard/rfqs/${rfq.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
